@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Panorámica interactiva</title>
+  <title>Panorámica</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -10,101 +10,30 @@
       margin: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden;
       background: #000;
-      cursor: grab;
+      overflow: hidden;
     }
 
-    #viewer {
+    .panorama {
       width: 100%;
       height: 100%;
-      overflow: hidden;
-      position: relative;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      scrollbar-width: thin;
     }
 
-    #track {
-      display: flex;
-      height: 100%;
-      position: absolute;
-      left: 0;
-      top: 0;
-      will-change: transform;
-    }
-
-    #track img {
+    .panorama img {
       height: 100%;
       width: auto;
-      user-select: none;
-      pointer-events: none;
+      display: inline-block;
     }
   </style>
 </head>
 
 <body>
-
-  <div id="viewer">
-    <div id="track">
-      <img src="panorama.jpg" alt="">
-      <img src="panorama.jpg" alt="">
-    </div>
+  <div class="panorama">
+    <img src="panorama.jpg" alt="Panorámica">
   </div>
-
-  <script>
-    const track = document.getElementById('track');
-    const images = track.querySelectorAll('img');
-
-    let isDown = false;
-    let startX = 0;
-    let currentX = 0;
-    let imgWidth = 0;
-
-    function updateWidth() {
-      imgWidth = images[0].offsetWidth;
-    }
-
-    window.addEventListener('load', updateWidth);
-    window.addEventListener('resize', updateWidth);
-
-    function loopPosition() {
-      if (currentX <= -imgWidth) {
-        currentX += imgWidth;
-      }
-      if (currentX >= 0) {
-        currentX -= imgWidth;
-      }
-      track.style.transform = `translateX(${currentX}px)`;
-    }
-
-    // Mouse
-    document.addEventListener('mousedown', e => {
-      isDown = true;
-      startX = e.pageX;
-    });
-
-    document.addEventListener('mouseup', () => {
-      isDown = false;
-    });
-
-    document.addEventListener('mousemove', e => {
-      if (!isDown) return;
-      const dx = e.pageX - startX;
-      startX = e.pageX;
-      currentX += dx;
-      loopPosition();
-    });
-
-    // Touch
-    document.addEventListener('touchstart', e => {
-      startX = e.touches[0].pageX;
-    }, { passive: true });
-
-    document.addEventListener('touchmove', e => {
-      const dx = e.touches[0].pageX - startX;
-      startX = e.touches[0].pageX;
-      currentX += dx;
-      loopPosition();
-    }, { passive: true });
-  </script>
-
 </body>
 </html>
