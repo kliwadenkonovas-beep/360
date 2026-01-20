@@ -17,8 +17,14 @@
     #viewer {
       width: 100%;
       height: 100%;
-      overflow: hidden;
+      overflow-x: scroll;   /* ← CLAVE */
+      overflow-y: hidden;
       cursor: grab;
+      scrollbar-width: none; /* Firefox */
+    }
+
+    #viewer::-webkit-scrollbar {
+      display: none; /* Chrome / Safari */
     }
 
     #viewer:active {
@@ -42,32 +48,28 @@
 
   <script>
     const viewer = document.getElementById('viewer');
-    const pano = document.getElementById('panorama');
 
     let isDown = false;
     let startX = 0;
-    let scrollX = 0;
+    let scrollStart = 0;
     let velocity = 0;
     let raf;
 
     viewer.addEventListener('mousedown', e => {
       isDown = true;
       startX = e.pageX;
-      scrollX = viewer.scrollLeft;
+      scrollStart = viewer.scrollLeft;
       velocity = 0;
       cancelAnimationFrame(raf);
     });
 
-    viewer.addEventListener('mouseleave', () => {
-      if (isDown) release();
-    });
-
     viewer.addEventListener('mouseup', release);
+    viewer.addEventListener('mouseleave', release);
 
     viewer.addEventListener('mousemove', e => {
       if (!isDown) return;
       const dx = e.pageX - startX;
-      viewer.scrollLeft = scrollX - dx;
+      viewer.scrollLeft = scrollStart - dx;
       velocity = dx;
     });
 
@@ -75,7 +77,7 @@
     viewer.addEventListener('touchstart', e => {
       isDown = true;
       startX = e.touches[0].pageX;
-      scrollX = viewer.scrollLeft;
+      scrollStart = viewer.scrollLeft;
       velocity = 0;
       cancelAnimationFrame(raf);
     }, { passive: true });
@@ -85,11 +87,12 @@
     viewer.addEventListener('touchmove', e => {
       if (!isDown) return;
       const dx = e.touches[0].pageX - startX;
-      viewer.scrollLeft = scrollX - dx;
+      viewer.scrollLeft = scrollStart - dx;
       velocity = dx;
     }, { passive: true });
 
     function release() {
+      if (!isDown) return;
       isDown = false;
       let momentum = velocity;
       function inertia() {
