@@ -33,11 +33,11 @@
 
     #panorama {
       height: 100%;
-      width: auto;
-      min-width: 200%;   /* ← CLAVE ABSOLUTA */
-      display: block;
+      width: 500vw;          /* ← MÁS recorrido */
+      object-fit: cover;
       user-select: none;
       pointer-events: none;
+      display: block;
     }
   </style>
 </head>
@@ -52,38 +52,26 @@
     const viewer = document.getElementById('viewer');
 
     let isDown = false;
-    let startX = 0;
-    let scrollStart = 0;
+    let startX;
+    let scrollLeft;
 
-    viewer.addEventListener('mousedown', e => {
+    viewer.addEventListener('mousedown', (e) => {
       isDown = true;
       startX = e.pageX;
-      scrollStart = viewer.scrollLeft;
+      scrollLeft = viewer.scrollLeft;
     });
 
-    viewer.addEventListener('mouseup', () => isDown = false);
-    viewer.addEventListener('mouseleave', () => isDown = false);
-
-    viewer.addEventListener('mousemove', e => {
-      if (!isDown) return;
-      const dx = e.pageX - startX;
-      viewer.scrollLeft = scrollStart - dx;
+    window.addEventListener('mouseup', () => {
+      isDown = false;
     });
 
-    // Touch
-    viewer.addEventListener('touchstart', e => {
-      isDown = true;
-      startX = e.touches[0].pageX;
-      scrollStart = viewer.scrollLeft;
-    }, { passive: true });
-
-    viewer.addEventListener('touchend', () => isDown = false);
-
-    viewer.addEventListener('touchmove', e => {
+    viewer.addEventListener('mousemove', (e) => {
       if (!isDown) return;
-      const dx = e.touches[0].pageX - startX;
-      viewer.scrollLeft = scrollStart - dx;
-    }, { passive: true });
+      e.preventDefault();
+      const x = e.pageX;
+      const walk = (x - startX) * 1.5; // sensibilidad
+      viewer.scrollLeft = scrollLeft - walk;
+    });
   </script>
 
 </body>
