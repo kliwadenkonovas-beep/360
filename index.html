@@ -12,67 +12,28 @@
       height: 100%;
       background: #000;
       overflow: hidden;
+      cursor: grab;
     }
 
-    #viewer {
+    #wrapper {
       width: 100%;
       height: 100%;
       overflow-x: scroll;
       overflow-y: hidden;
+      white-space: nowrap;
       cursor: grab;
-      scrollbar-width: none;
     }
 
-    #viewer::-webkit-scrollbar {
-      display: none;
-    }
-
-    #viewer:active {
-      cursor: grabbing;
-    }
-
-    #panorama {
+    #wrapper img {
       height: 100%;
-      width: 500vw;          /* ← MÁS recorrido */
-      object-fit: cover;
-      user-select: none;
-      pointer-events: none;
-      display: block;
+      display: inline-block;
     }
   </style>
 </head>
 
 <body>
-
-  <div id="viewer">
-    <img id="panorama" src="panorama.jpg" alt="Panorámica">
+  <div id="wrapper">
+    <img src="panorama.jpg" alt="Panorámica">
   </div>
-
-  <script>
-    const viewer = document.getElementById('viewer');
-
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-
-    viewer.addEventListener('mousedown', (e) => {
-      isDown = true;
-      startX = e.pageX;
-      scrollLeft = viewer.scrollLeft;
-    });
-
-    window.addEventListener('mouseup', () => {
-      isDown = false;
-    });
-
-    viewer.addEventListener('mousemove', (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const x = e.pageX;
-      const walk = (x - startX) * 1.5; // sensibilidad
-      viewer.scrollLeft = scrollLeft - walk;
-    });
-  </script>
-
 </body>
 </html>
