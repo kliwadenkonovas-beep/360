@@ -1,115 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Panorámica interactiva</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<title>Panorámica interactiva</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-      cursor: grab;
-    }
+<style>
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
 
-    #viewer {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      overflow: hidden;
-    }
+#viewer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;   /* ← CLAVE ABSOLUTA */
+  cursor: grab;
+}
 
-    #track {
-      position: absolute;
-      display: flex;
-      height: 120%;              /* ← margen vertical */
-      top: -10%;
-      left: 0;
-      will-change: transform;
-    }
+#track {
+  display: flex;
+  height: 110%;
+  position: absolute;
+  top: -5%;
+  left: 0;
+  will-change: transform;
+}
 
-    #track img {
-      height: 100%;
-      width: auto;
-      user-select: none;
-      pointer-events: none;
-    }
-  </style>
+#track img {
+  height: 100%;
+  width: auto;
+  pointer-events: none;
+  user-select: none;
+}
+</style>
 </head>
 
 <body>
 
-  <div id="viewer">
-    <div id="track">
-      <img src="panorama.jpg" alt="">
-      <img src="panorama.jpg" alt="">
-    </div>
+<div id="viewer">
+  <div id="track">
+    <img src="panorama.jpg">
+    <img src="panorama.jpg">
   </div>
+</div>
 
-  <script>
-    const viewer = document.getElementById('viewer');
-    const track = document.getElementById('track');
-    const imgs = track.querySelectorAll('img');
+<script>
+const viewer = document.getElementById('viewer');
+const track = document.getElementById('track');
+const imgs = track.querySelectorAll('img');
 
-    let isDown = false;
-    let startX = 0;
-    let startY = 0;
+let startX = 0;
+let startY = 0;
+let x = 0;
+let y = 0;
+let imgWidth = 0;
+const maxY = 80;
 
-    let x = 0;
-    let y = 0;
+function updateWidth() {
+  imgWidth = imgs[0].offsetWidth;
+}
 
-    let imgWidth = 0;
-    const maxY = 80; // límite vertical (px)
+window.addEventListener('load', updateWidth);
+window.addEventListener('resize', updateWidth);
 
-    function updateWidth() {
-      imgWidth = imgs[0].offsetWidth;
-    }
+function update() {
+  if (x <= -imgWidth) x += imgWidth;
+  if (x >= 0) x -= imgWidth;
+  y = Math.max(-maxY, Math.min(maxY, y));
+  track.style.transform = `translate(${x}px, ${y}px)`;
+}
 
-    window.addEventListener('load', updateWidth);
-    window.addEventListener('resize', updateWidth);
+viewer.addEventListener('pointerdown', e => {
+  viewer.setPointerCapture(e.pointerId);
+  startX = e.clientX;
+  startY = e.clientY;
+});
 
-    function update() {
-      if (x <= -imgWidth) x += imgWidth;
-      if (x >= 0) x -= imgWidth;
-      y = Math.max(-maxY, Math.min(maxY, y));
-      track.style.transform = `translate(${x}px, ${y}px)`;
-    }
+viewer.addEventListener('pointermove', e => {
+  if (!viewer.hasPointerCapture(e.pointerId)) return;
+  x += e.clientX - startX;
+  y += (e.clientY - startY) * 0.4;
+  startX = e.clientX;
+  startY = e.clientY;
+  update();
+});
 
-    // Mouse
-    viewer.addEventListener('mousedown', e => {
-      isDown = true;
-      startX = e.pageX;
-      startY = e.pageY;
-    });
-
-    window.addEventListener('mouseup', () => isDown = false);
-
-    viewer.addEventListener('mousemove', e => {
-      if (!isDown) return;
-      x += e.pageX - startX;
-      y += (e.pageY - startY) * 0.4; // sensibilidad vertical
-      startX = e.pageX;
-      startY = e.pageY;
-      update();
-    });
-
-    // Touch
-    viewer.addEventListener('touchstart', e => {
-      startX = e.touches[0].pageX;
-      startY = e.touches[0].pageY;
-    }, { passive: true });
-
-    viewer.addEventListener('touchmove', e => {
-      x += e.touches[0].pageX - startX;
-      y += (e.touches[0].pageY - startY) * 0.4;
-      startX = e.touches[0].pageX;
-      startY = e.touches[0].pageY;
-      update();
-    }, { passive: true });
-  </script>
+viewer.addEventListener('pointerup', e => {
+  viewer.releasePointerCapture(e.pointerId);
+});
+</script>
 
 </body>
 </html>
