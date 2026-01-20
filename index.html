@@ -12,29 +12,96 @@
       height: 100%;
       background: #000;
       overflow: hidden;
-      cursor: grab;
     }
 
-    #wrapper {
+    #viewer {
       width: 100%;
       height: 100%;
-      overflow-x: scroll;
-      overflow-y: hidden;
-      white-space: nowrap;
+      overflow: hidden;
       cursor: grab;
     }
 
-    #wrapper img {
+    #viewer:active {
+      cursor: grabbing;
+    }
+
+    #panorama {
       height: 100%;
-      display: inline-block;
+      display: block;
+      user-select: none;
+      pointer-events: none;
     }
   </style>
 </head>
 
 <body>
-  <div id="wrapper">
-    <img src="panorama.jpg" alt="Panorámica">
+
+  <div id="viewer">
+    <img id="panorama" src="panorama.jpg" alt="Panorámica">
   </div>
+
+  <script>
+    const viewer = document.getElementById('viewer');
+    const pano = document.getElementById('panorama');
+
+    let isDown = false;
+    let startX = 0;
+    let scrollX = 0;
+    let velocity = 0;
+    let raf;
+
+    viewer.addEventListener('mousedown', e => {
+      isDown = true;
+      startX = e.pageX;
+      scrollX = viewer.scrollLeft;
+      velocity = 0;
+      cancelAnimationFrame(raf);
+    });
+
+    viewer.addEventListener('mouseleave', () => {
+      if (isDown) release();
+    });
+
+    viewer.addEventListener('mouseup', release);
+
+    viewer.addEventListener('mousemove', e => {
+      if (!isDown) return;
+      const dx = e.pageX - startX;
+      viewer.scrollLeft = scrollX - dx;
+      velocity = dx;
+    });
+
+    // Touch
+    viewer.addEventListener('touchstart', e => {
+      isDown = true;
+      startX = e.touches[0].pageX;
+      scrollX = viewer.scrollLeft;
+      velocity = 0;
+      cancelAnimationFrame(raf);
+    }, { passive: true });
+
+    viewer.addEventListener('touchend', release);
+
+    viewer.addEventListener('touchmove', e => {
+      if (!isDown) return;
+      const dx = e.touches[0].pageX - startX;
+      viewer.scrollLeft = scrollX - dx;
+      velocity = dx;
+    }, { passive: true });
+
+    function release() {
+      isDown = false;
+      let momentum = velocity;
+      function inertia() {
+        momentum *= 0.95;
+        viewer.scrollLeft -= momentum;
+        if (Math.abs(momentum) > 0.5) {
+          raf = requestAnimationFrame(inertia);
+        }
+      }
+      inertia();
+    }
+  </script>
+
 </body>
 </html>
-
